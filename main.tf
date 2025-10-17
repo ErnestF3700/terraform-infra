@@ -18,7 +18,7 @@ provider "aws" {
 
 # --- 1. Nowy bucket ---
 resource "aws_s3_bucket" "new_bucket" {
-  bucket = "task-webiste-erni-copy"
+  bucket = "task-webiste-erni-copy123"
 }
 
 resource "aws_s3_bucket_website_configuration" "website" {
@@ -163,7 +163,7 @@ resource "aws_s3_bucket" "logs" {
 
 # WAF – limit 100 req/min/IP
 resource "aws_wafv2_web_acl" "rate_limit_acl" {
-  name        = "cf-rate-limit-acl"
+  name        = "cf-rate-limit-acl123"
   description = "Limit to 100 req/min per IP"
   scope       = "CLOUDFRONT"
 
