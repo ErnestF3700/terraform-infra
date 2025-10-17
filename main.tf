@@ -41,25 +41,25 @@ resource "aws_s3_bucket_public_access_block" "public_access" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "public_read" {
-  bucket = aws_s3_bucket.new_bucket.id
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect    = "Allow",
-      Principal = "*",
-      Action    = "s3:GetObject",
-      Resource  = "${aws_s3_bucket.new_bucket.arn}/*"
-      },
-      {
-        Sid       = "PublicListBucket",
-        Effect    = "Allow",
-        Principal = "*",
-        Action    = "s3:ListBucket",
-        Resource  = aws_s3_bucket.new_bucket.arn
-    }]
-  })
-}
+# resource "aws_s3_bucket_policy" "public_read" {
+#   bucket = aws_s3_bucket.new_bucket.id
+#   policy = jsonencode({
+#     Version = "2012-10-17",
+#     Statement = [{
+#       Effect    = "Allow",
+#       Principal = "*",
+#       Action    = "s3:GetObject",
+#       Resource  = "${aws_s3_bucket.new_bucket.arn}/*"
+#       },
+#       {
+#         Sid       = "PublicListBucket",
+#         Effect    = "Allow",
+#         Principal = "*",
+#         Action    = "s3:ListBucket",
+#         Resource  = aws_s3_bucket.new_bucket.arn
+#     }]
+#   })
+# }
 
 # --- 2. Skopiowanie plików ze starego bucketa ---
 # Ten blok wymaga AWS CLI z odpowiednimi uprawnieniami
