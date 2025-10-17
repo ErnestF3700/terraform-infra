@@ -30,7 +30,7 @@ jobs:
       - name: Configure AWS credentials (plan role, OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/tf-plan-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/plan_tf_role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform init
