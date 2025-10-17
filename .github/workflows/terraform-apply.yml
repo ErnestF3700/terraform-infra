@@ -1,0 +1,61 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref (branch/SHA) do zaczytania"
+        required: false
+        default: "main"
+      plan_run_id:
+        description: "Run ID workflowu Plan (opcjonalnie, żeby pobrać artefakt tfplan)"
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+
+env:
+  AWS_REGION: eu-central-1
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: production   # możesz dodać approval w ustawieniach środowiska
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Configure AWS credentials (apply role, OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/tf-apply-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        run: terraform init -upgrade
+
+      - name: Download plan artifact (jeśli podano plan_run_id)
+        if: ${{ inputs.plan_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: .
+          run-id: ${{ inputs.plan_run_id }}
+
+      - name: Terraform apply (z artefaktu)
+        if: ${{ inputs.plan_run_id != '' }}
+        run: terraform apply -auto-approve tfplan.binary
+
+      - name: Terraform apply (bez artefaktu – bieżący kod)
+        if: ${{ inputs.plan_run_id == '' }}
+        run: terraform apply -auto-approve

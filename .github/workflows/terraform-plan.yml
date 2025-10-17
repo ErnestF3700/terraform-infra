@@ -1,0 +1,57 @@
+name: Terraform Plan
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  id-token: write   # potrzebne do OIDC → assume-role
+  contents: read
+
+env:
+  AWS_REGION: eu-central-1   # ustaw swój region
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Configure AWS credentials (plan role, OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/tf-plan-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init
+        run: terraform init -upgrade
+
+      - name: Terraform fmt
+        run: terraform fmt -check
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: TFLint (init + lint)
+        run: |
+          tflint --init
+          tflint --minimum-failure-severity=warning
+
+      - name: Terraform plan
+        run: terraform plan -out=tfplan.binary
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: tfplan.binary
